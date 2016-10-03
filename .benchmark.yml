@@ -1,0 +1,287 @@
+#######################################
+#       C Driver Config for MCI       #
+#######################################
+
+#######################################
+#            Variables                #
+#######################################
+
+c_driver_variables:
+
+  ## Note that these are Tasks!
+  benchmark_test_list: &benchmark_tests
+    #- name: "compile"
+    - name: "TestFlatEncoding"
+    #- name: "TestFindOneByID"
+
+  ## Common download urls (merge in as hashes)
+  mongo_download_url_prefixes:
+    mongo_v32: &mongo_v32
+      mongo_url: "http://downloads.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-latest.tgz"
+    mongo_v24: &mongo_v24
+      mongo_url: "http://downloads.mongodb.org/linux/mongodb-linux-x86_64-2.4.14.tgz"
+
+  ## Common sets of CFLAGS
+  cflags:
+    standard: &cflags_64
+      cflags: "-m64 -march=x86-64 -Werror"
+    standard_no_werror: &cflags_64_no_werror
+      cflags: "-m64 -march=x86-64"
+
+  ## Extra $PATH entries
+  paths:
+    unix_path: &unix_path
+      extra_path:
+
+  ## Scripts that are shared between buildvariants
+  scripts:
+    compile:
+      unix: &compile_unix
+        compile_script: |
+          set -o errexit
+          set -o verbose
+          ./autogen.sh --prefix=`pwd`/mongoc
+          make -j8
+          make install
+          git clone https://github.com/mongodb/mongo-c-driver-performance.git
+          cd mongo-c-driver-performance
+          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
+          make
+    mongodb:
+      start_mongod_command: &start_mongod_command
+        start_mongod: |
+          set -o errexit
+          set -o verbose
+          mkdir db
+          ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork --logappend --smallfiles --oplogSize 50 
+    benchmark_tests: 
+      unix: &run_benchmark_tests_unix
+        run_benchmark_tests: |
+          #export MONGOC_TEST_FUTURE_TIMEOUT_MS=30000
+
+          # Variablize the test param 
+          ./mongo-c-driver-performance/mongo-c-performance ./data ${benchmark_test_name} 
+
+  benchmark_common: &benchmark_common
+    <<: *compile_unix
+    <<: *start_mongod_command
+    <<: *unix_path
+    <<: *run_benchmark_tests_unix
+
+#######################################
+#            Functions                #
+#######################################
+
+functions:
+  "compile function" :
+    command: shell.exec
+    params:
+      working_dir: "mongo-c-driver"
+      script: |
+          export PATH=${extra_path}:$PATH
+          export CFLAGS="${cflags}"
+          ${compile_script}
+
+  "fetch source" :
+    command: git.get_project
+    params:
+      directory: mongo-c-driver
+
+  "set mongo version 2.4" :
+    command: expansions.update
+    params:
+      updates:
+        - key: "mongo_url"
+          value: ${mongo_url_prefix}2.4.14.${mongo_url_extension|tgz}
+
+  "set mongo version 2.6" :
+    command: expansions.update
+    params:
+      updates:
+        - key: "mongo_url"
+          value: ${mongo_url_prefix}2.6.10.${mongo_url_extension|tgz}
+
+  "set mongo version 3.0" :
+    command: expansions.update
+    params:
+      updates:
+        - key: "mongo_url"
+          value: ${mongo_url_prefix}${mongo_url_platform|}3.0.5.${mongo_url_extension|tgz}
+
+  "set mongo version latest" :
+    command: expansions.update
+    params:
+      updates:
+        - key: "mongo_url"
+          value: ${mongo_url_prefix}${mongo_url_platform|}latest.${mongo_url_extension|tgz}
+
+  "set benchmark test TestFlatEncoding" :
+    command: expansions.update
+    params:
+      updates:
+        - key: "benchmark_test_name"
+          value: "TestFlatEncoding"
+
+  "set benchmark test TestFindOneByID" :
+    command: expansions.update
+    params:
+      updates:
+        - key: "benchmark_test_name"
+          value: "TestFindOneByID"
+
+  "create working directory" :
+    command: shell.exec
+    params:
+      script: |
+        rm -rf mongo-c-driver
+        mkdir mongo-c-driver
+
+  # MCI's S3 mechanism doesn't support symlinks, use curl instead of s3.get
+  #"fetch artifacts" :
+  #  command: shell.exec
+  #  params:
+  #    working_dir: "mongo-c-driver"
+  #    script: |
+  #      set -o verbose
+  #      set -o errexit
+  #      ls -la
+  #      curl http://s3.amazonaws.com/mciuploads/mongo-c-driver/${build_variant}/${revision}/artifacts/mongo-${build_id}.tar.gz -o ${build_id}.tar.gz --silent --max-time 120
+  #      tar zxf ${build_id}.tar.gz
+
+  "fetch mongodb" :
+    command: shell.exec
+    params:
+      working_dir: "mongo-c-driver"
+      script: |
+        set -o verbose
+        set -o errexit
+        ls -la
+        curl -s ${mongo_url} --output mongo-archive.${ext|tgz}
+        ${decompress} mongo-archive.${ext|tgz}
+        mv mongodb* mongodb
+        chmod +x ./mongodb/bin/mongod${extension}
+
+  "fetch test data" :
+    command: shell.exec
+    params:
+      working_dir: "mongo-c-driver"
+      script: |
+        set -o verbose
+        set -o errexit
+        ls -la
+        curl https://s3.amazonaws.com/boxes.10gen.com/build/driver-test-data.tar.gz -o driver-test-data.tar.gz --silent --max-time 120
+        ${decompress} driver-test-data.tar.gz 
+
+  "run benchmark tests" :
+    command: shell.exec
+    params:
+      working_dir: "mongo-c-driver"
+      script: |
+        set -o errexit
+        set -o verbose
+
+        result=-1  # Negative one.
+
+        # Run this function on exit.
+        done=false
+        finish () {
+           set +o errexit
+           if [ "$done" = false ]; then
+              # There was an error.
+              echo "something went wrong, killing mongod and exiting"
+              killall -9 mongod
+           fi
+
+           exit $result
+        }
+
+        trap finish EXIT
+
+        echo "Compiling the C driver and performance binaries"
+        export PATH=${extra_path}:$PATH
+        export CFLAGS="${cflags}"
+        ${compile_script}
+
+        ${start_mongod}
+        sleep 15
+        #echo "I am running your tests ${benchmark_test_name}"
+        echo "I am running your tests (just one for now)"
+        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding 
+        set +o errexit
+        result=$?
+
+        cat results.json
+
+        set +o errexit
+        killall -9 mongod
+
+        done=true
+        exit $result
+
+  "report results" :
+    command: attach.results
+    params:
+      file_location: "mongo-c-driver/test-results.json"
+
+
+#######################################
+#               Tasks                 #
+#######################################
+
+tasks:
+    - name: compile
+      commands:
+        - func: "fetch source"
+        - command: git.apply_patch
+          params:
+            directory: "mongo-c-driver"
+        - func: "compile function"
+        - command: shell.exec
+          params:
+              working_dir: "mongo-c-driver"
+              script: |
+                set -o errexit
+                set -o verbose
+                tar czf ../mongo-c-driver.tar.gz .
+        # We dont need to push or save this now!
+        #- command: s3.put
+        #  params:
+        #    aws_key: ${aws_key}
+        #    aws_secret: ${aws_secret}
+        #    local_file: mongo-c-driver.tar.gz
+        #    remote_file: mongo-c-driver/${build_variant}/${revision}/artifacts/mongo-${build_id}.tar.gz
+        #    bucket: mciuploads
+        #    permissions: public-read
+        #    content_type: ${content_type|application/x-gzip}
+
+    - name: TestFlatEncoding
+      # depends_on:
+      #  - name: "compile"
+      commands:
+        - func: "fetch source"
+        - command: git.apply_patch
+          params:
+            directory: "mongo-c-driver"
+        - func: "set mongo version 2.4"
+        #- func: "set benchmark test TestFlatEncoding"
+        - func: "create working directory"
+        #- func: "fetch artifacts"
+        - func: "fetch test data"
+        - func: "fetch mongodb"
+        - func: "run benchmark tests"
+
+#######################################
+#           Buildvariants             #
+#######################################
+
+buildvariants:
+
+- name: ubuntu-1604-mongo24-test
+  display_name: "C Driver Mongo 2.4"
+  expansions:
+    <<: *cflags_64
+    <<: *mongo_v32
+    <<: *benchmark_common
+  run_on:
+     - docker
+  tasks: *benchmark_tests
