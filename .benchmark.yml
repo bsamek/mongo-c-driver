@@ -156,6 +156,7 @@ functions:
         set -o verbose
         set -o errexit
         ls -la
+        echo "Fetching mongo ${mongo_url}"
         curl -s ${mongo_url} --output mongo-archive.${ext|tgz}
         ${decompress} mongo-archive.${ext|tgz}
         mv mongodb* mongodb
@@ -280,7 +281,7 @@ buildvariants:
   display_name: "C Driver Mongo 2.4"
   expansions:
     <<: *cflags_64
-    <<: *mongo_v32
+    <<: *mongo_v24
     <<: *benchmark_common
   run_on:
      - docker
