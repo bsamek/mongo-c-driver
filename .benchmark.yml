@@ -263,7 +263,7 @@ tasks:
         - command: git.apply_patch
           params:
             directory: "mongo-c-driver"
-        - func: "set mongo version 2.4"
+        #- func: "set mongo version 2.4"
         #- func: "set benchmark test TestFlatEncoding"
         - func: "create working directory"
         #- func: "fetch artifacts"
