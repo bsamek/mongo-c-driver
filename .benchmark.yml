@@ -201,8 +201,8 @@ functions:
 
         echo "Compiling the C driver and performance binaries"
 
-        echo `pwd`
-        ls -altr
+        #echo `pwd`
+        #ls -altr
         ./autogen.sh --prefix=`pwd`/mongoc
         make -j8
         make install
@@ -212,10 +212,6 @@ functions:
         PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
         make
 
-
-        #export PATH=${extra_path}:$PATH
-        #export CFLAGS="${cflags}"
-        #${compile_script}
 
         ${start_mongod}
         sleep 15
