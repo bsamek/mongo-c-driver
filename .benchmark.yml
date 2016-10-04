@@ -281,8 +281,8 @@ tasks:
         #- func: "set benchmark test TestFlatEncoding"
         #- func: "create working directory"
         #- func: "fetch artifacts"
-        #- func: "fetch test data"
-        #- func: "fetch mongodb"
+        - func: "fetch test data"
+        - func: "fetch mongodb"
         - func: "run benchmark tests"
 
 #######################################
