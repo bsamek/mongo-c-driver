@@ -246,7 +246,7 @@ functions:
               "name": "TestFlatEncoding",
               "results": {
                 "1": {
-                  "ops_per_sec": 231804940.334062
+                  "ops_per_sec": 181804940.334062
                 }
               }
             }
