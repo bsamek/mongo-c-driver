@@ -328,7 +328,7 @@ tasks:
 
 buildvariants:
 
-- name: ubuntu-1604-mongo24-test1
+- name: ubuntu-1604-mongo24-test2
   display_name: "C Driver Mongo 2.4"
   expansions:
     <<: *cflags_64
