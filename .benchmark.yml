@@ -45,7 +45,8 @@ c_driver_variables:
           make install
           git clone https://github.com/mongodb/mongo-c-driver-performance.git
           cd mongo-c-driver-performance
-          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
+          #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
+          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
           make
     mongodb:
       start_mongod_command: &start_mongod_command
