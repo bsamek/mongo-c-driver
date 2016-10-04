@@ -211,11 +211,12 @@ functions:
         #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
         PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
         make
-
+        cd ..
 
         ${start_mongod}
         sleep 15
         #echo "I am running your tests ${benchmark_test_name}"
+
         echo "I am running your tests (just one for now)"
         LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding 
         set +o errexit
