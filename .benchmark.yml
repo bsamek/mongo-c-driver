@@ -203,7 +203,7 @@ functions:
 
         echo `pwd`
         ls -altr
-        `pwd`./autogen.sh --prefix=`pwd`/mongoc
+        `pwd`/autogen.sh --prefix=`pwd`/mongoc
         make -j8
         make install
         git clone https://github.com/mongodb/mongo-c-driver-performance.git
