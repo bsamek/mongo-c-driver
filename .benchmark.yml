@@ -11,7 +11,7 @@ c_driver_variables:
   ## Note that these are Tasks!
   benchmark_test_list: &benchmark_tests
     #- name: "compile"
-    - name: "TestFlatEncoding"
+    - name: "BenchMarkTests"
     #- name: "TestFindOneByID"
 
   ## Common download urls (merge in as hashes)
@@ -137,18 +137,6 @@ functions:
         rm -rf mongo-c-driver
         mkdir mongo-c-driver
 
-  # MCI's S3 mechanism doesn't support symlinks, use curl instead of s3.get
-  #"fetch artifacts" :
-  #  command: shell.exec
-  #  params:
-  #    working_dir: "mongo-c-driver"
-  #    script: |
-  #      set -o verbose
-  #      set -o errexit
-  #      ls -la
-  #      curl http://s3.amazonaws.com/mciuploads/mongo-c-driver/${build_variant}/${revision}/artifacts/mongo-${build_id}.tar.gz -o ${build_id}.tar.gz --silent --max-time 120
-  #      tar zxf ${build_id}.tar.gz
-
   "fetch mongodb" :
     command: shell.exec
     params:
@@ -217,10 +205,10 @@ functions:
         sleep 15
         #echo "I am running your tests ${benchmark_test_name}"
 
-        echo "I am running your tests (just one for now)"
+        echo "I am running your tests (just two for now)"
         start_time=$(date +%s)
-        # LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding TestDeepEncoding
-        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
+        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding TestDeepEncoding
+        #LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
         set +o errexit
         result=$?
 
@@ -239,10 +227,6 @@ functions:
         echo "{\"failures\": $failures, \"results\": [{\"status\": $status, \"exit_code\": $result, \"test_file\": \"TestFlatEncoding\", \"start\": $start_time, \"end\": $end_time, \"elapsed\": $elapsed_secs}]}" > report.json
         cat report.json
        
-        python p.py 
-        echo "Transformed with JSON's lil' helper .."
-        cat dashboard.json
-
         set +o errexit
         killall -9 mongod
 
@@ -253,7 +237,7 @@ functions:
     command: json.send
     params:
       name: perf
-      file: mongo-c-driver/dashboard.json
+      file: mongo-c-driver/results.json
 
   "report results" :
     command: attach.results
@@ -280,29 +264,13 @@ tasks:
                 set -o errexit
                 set -o verbose
                 tar czf ../mongo-c-driver.tar.gz .
-        # We dont need to push or save this now!
-        #- command: s3.put
-        #  params:
-        #    aws_key: ${aws_key}
-        #    aws_secret: ${aws_secret}
-        #    local_file: mongo-c-driver.tar.gz
-        #    remote_file: mongo-c-driver/${build_variant}/${revision}/artifacts/mongo-${build_id}.tar.gz
-        #    bucket: mciuploads
-        #    permissions: public-read
-        #    content_type: ${content_type|application/x-gzip}
 
-    - name: TestFlatEncoding
-      # depends_on:
-      #  - name: "compile"
+    - name: BenchMarkTests 
       commands:
         - func: "fetch source"
         - command: git.apply_patch
           params:
             directory: "mongo-c-driver"
-        #- func: "set mongo version 2.4"
-        #- func: "set benchmark test TestFlatEncoding"
-        #- func: "create working directory"
-        #- func: "fetch artifacts"
         - func: "fetch test data"
         - func: "fetch mongodb"
         - func: "run benchmark tests"
@@ -315,7 +283,7 @@ tasks:
 
 buildvariants:
 
-- name: ubuntu-1604-mongo24-test
+- name: ubuntu-1604-mongo24-test2 
   display_name: "C Driver Mongo 2.4"
   expansions:
     <<: *cflags_64
