@@ -230,6 +230,8 @@ functions:
 
         done=true
         exit $result
+
+  "send dashboard" :
     command: json.send
     params:
       name: perf
@@ -286,6 +288,7 @@ tasks:
         - func: "fetch test data"
         - func: "fetch mongodb"
         - func: "run benchmark tests"
+        - func: "send dashboard"
 
 #######################################
 #           Buildvariants             #
