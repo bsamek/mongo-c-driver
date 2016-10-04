@@ -201,7 +201,9 @@ functions:
 
         echo "Compiling the C driver and performance binaries"
 
-        ./autogen.sh --prefix=`pwd`/mongoc
+        echo `pwd`
+        ls -altr
+        `pwd`./autogen.sh --prefix=`pwd`/mongoc
         make -j8
         make install
         git clone https://github.com/mongodb/mongo-c-driver-performance.git
@@ -279,8 +281,8 @@ tasks:
         #- func: "set benchmark test TestFlatEncoding"
         - func: "create working directory"
         #- func: "fetch artifacts"
-        - func: "fetch test data"
-        - func: "fetch mongodb"
+        #- func: "fetch test data"
+        #- func: "fetch mongodb"
         - func: "run benchmark tests"
 
 #######################################
