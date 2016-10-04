@@ -218,7 +218,8 @@ functions:
         #echo "I am running your tests ${benchmark_test_name}"
 
         echo "I am running your tests (just one for now)"
-        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding 
+        # LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding 
+        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
         set +o errexit
         result=$?
 
@@ -229,6 +230,10 @@ functions:
 
         done=true
         exit $result
+    command: json.send
+    params:
+      name: perf
+      file: mongo-c-driver/results.json
 
   "report results" :
     command: attach.results
