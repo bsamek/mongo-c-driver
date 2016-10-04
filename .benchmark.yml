@@ -200,9 +200,20 @@ functions:
         trap finish EXIT
 
         echo "Compiling the C driver and performance binaries"
-        export PATH=${extra_path}:$PATH
-        export CFLAGS="${cflags}"
-        ${compile_script}
+
+        ./autogen.sh --prefix=`pwd`/mongoc
+        make -j8
+        make install
+        git clone https://github.com/mongodb/mongo-c-driver-performance.git
+        cd mongo-c-driver-performance
+        #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
+        PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
+        make
+
+
+        #export PATH=${extra_path}:$PATH
+        #export CFLAGS="${cflags}"
+        #${compile_script}
 
         ${start_mongod}
         sleep 15
