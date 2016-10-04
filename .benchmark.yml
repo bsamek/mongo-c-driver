@@ -219,7 +219,7 @@ functions:
 
         echo "I am running your tests (just one for now)"
         start_time=$(date +%s)
-        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding 
+        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding TestDeepEncoding
         # LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
         set +o errexit
         result=$?
@@ -238,30 +238,9 @@ functions:
         fi
         echo "{\"failures\": $failures, \"results\": [{\"status\": $status, \"exit_code\": $result, \"test_file\": \"TestFlatEncoding\", \"start\": $start_time, \"end\": $end_time, \"elapsed\": $elapsed_secs}]}" > report.json
         cat report.json
-        
-        cat > dashboard.json <<End-of-json
-        {
-          "results": [
-            {
-              "name": "TestFlatEncoding",
-              "results": {
-                "1": {
-                  "ops_per_sec": 191804940.334062
-                }
-              }
-            },
-            {
-              "name": "TestDeepEncoding",
-              "results": {
-                "1": {
-                  "ops_per_sec": 201804940.334062
-                }
-              }
-            }
-          ]
-        }
-        End-of-json
-        echo "fake dashboard"
+       
+        python p.py 
+        echo "transformed with JSON's lil helper .."
         cat dashboard.json
 
         set +o errexit
