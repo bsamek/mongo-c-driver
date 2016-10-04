@@ -203,7 +203,7 @@ functions:
 
         echo `pwd`
         ls -altr
-        `pwd`/autogen.sh --prefix=`pwd`/mongoc
+        ./autogen.sh --prefix=`pwd`/mongoc
         make -j8
         make install
         git clone https://github.com/mongodb/mongo-c-driver-performance.git
@@ -279,7 +279,7 @@ tasks:
             directory: "mongo-c-driver"
         #- func: "set mongo version 2.4"
         #- func: "set benchmark test TestFlatEncoding"
-        - func: "create working directory"
+        #- func: "create working directory"
         #- func: "fetch artifacts"
         #- func: "fetch test data"
         #- func: "fetch mongodb"
