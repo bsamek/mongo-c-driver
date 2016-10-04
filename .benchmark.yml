@@ -189,8 +189,6 @@ functions:
 
         echo "Compiling the C driver and performance binaries"
 
-        #echo `pwd`
-        #ls -altr
         ./autogen.sh --prefix=`pwd`/mongoc
         make -j8
         make install
@@ -203,7 +201,6 @@ functions:
 
         ${start_mongod}
         sleep 15
-        #echo "I am running your tests ${benchmark_test_name}"
 
         echo "I am running your tests (just two for now)"
         start_time=$(date +%s)
