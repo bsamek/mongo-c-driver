@@ -219,8 +219,8 @@ functions:
 
         echo "I am running your tests (just one for now)"
         start_time=$(date +%s)
-        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding TestDeepEncoding
-        # LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
+        # LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding TestDeepEncoding
+        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
         set +o errexit
         result=$?
 
@@ -240,7 +240,7 @@ functions:
         cat report.json
        
         python p.py 
-        echo "transformed with JSON's lil helper .."
+        echo "Transformed with JSON's lil' helper .."
         cat dashboard.json
 
         set +o errexit
@@ -315,7 +315,7 @@ tasks:
 
 buildvariants:
 
-- name: ubuntu-1604-mongo24-test2
+- name: ubuntu-1604-mongo24-test
   display_name: "C Driver Mongo 2.4"
   expansions:
     <<: *cflags_64
