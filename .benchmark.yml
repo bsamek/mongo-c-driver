@@ -253,7 +253,7 @@ functions:
   "report results" :
     command: attach.results
     params:
-      file_location: "mongo-c-driver/test-results.json"
+      file_location: "mongo-c-driver/report.json"
 
 
 #######################################
