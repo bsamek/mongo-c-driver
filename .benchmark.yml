@@ -246,7 +246,7 @@ functions:
               "name": "TestFlatEncoding",
               "results": {
                 "1": {
-                  "ops_per_sec": 181804940.334062
+                  "ops_per_sec": 191804940.334062
                 }
               }
             },
@@ -254,7 +254,7 @@ functions:
               "name": "TestDeepEncoding",
               "results": {
                 "1": {
-                  "ops_per_sec": 231804940.334062
+                  "ops_per_sec": 201804940.334062
                 }
               }
             }
