@@ -250,20 +250,6 @@ post:
 #######################################
 
 tasks:
-    - name: compile
-      commands:
-        - func: "fetch source"
-        - command: git.apply_patch
-          params:
-            directory: "mongo-c-driver"
-        - func: "compile function"
-        - command: shell.exec
-          params:
-              working_dir: "mongo-c-driver"
-              script: |
-                set -o errexit
-                set -o verbose
-                tar czf ../mongo-c-driver.tar.gz .
 
     - name: BenchMarkTests 
       commands:
