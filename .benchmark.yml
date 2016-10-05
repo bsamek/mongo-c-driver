@@ -191,15 +191,15 @@ tasks:
 
 buildvariants:
 
-- name: ubuntu-1604-mongo24
-  display_name: "C Driver Mongo 2.4"
-  expansions:
-    <<: *cflags_64
-    <<: *mongo_v24
-    <<: *benchmark_common
-  run_on:
-     - docker
-  tasks: *benchmark_tests
+#- name: ubuntu-1604-mongo24
+#  display_name: "C Driver Mongo 2.4"
+#  expansions:
+#    <<: *cflags_64
+#    <<: *mongo_v24
+#    <<: *benchmark_common
+#  run_on:
+#     - docker
+#  tasks: *benchmark_tests
 
 - name: ubuntu-1604-mongo32
   display_name: "C Driver Mongo 3.2"
