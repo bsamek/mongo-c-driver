@@ -10,9 +10,7 @@ c_driver_variables:
 
   ## Note that these are Tasks!
   benchmark_test_list: &benchmark_tests
-    #- name: "compile"
     - name: "BenchMarkTests"
-    #- name: "TestFindOneByID"
 
   ## Common download urls (merge in as hashes)
   mongo_download_url_prefixes:
@@ -83,84 +81,42 @@ functions:
           export CFLAGS="${cflags}"
           ${compile_script}
 
-  "fetch source" :
-    command: git.get_project
-    params:
-      directory: mongo-c-driver
+#  "fetch source" :
+#    command: git.get_project
+#    params:
+#      directory: mongo-c-driver
 
-  "set mongo version 2.4" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "mongo_url"
-          value: ${mongo_url_prefix}2.4.14.${mongo_url_extension|tgz}
+#  "create working directory" :
+#    command: shell.exec
+#    params:
+#      script: |
+#        rm -rf mongo-c-driver
+#        mkdir mongo-c-driver
 
-  "set mongo version 2.6" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "mongo_url"
-          value: ${mongo_url_prefix}2.6.10.${mongo_url_extension|tgz}
+#  "fetch mongodb" :
+#    command: shell.exec
+#    params:
+#      working_dir: "mongo-c-driver"
+#      script: |
+#        set -o verbose
+#        set -o errexit
+#        ls -la
+#        echo "Fetching mongo ${mongo_url}"
+#        curl -s ${mongo_url} --output mongo-archive.${ext|tgz}
+#        ${decompress} mongo-archive.${ext|tgz}
+#        mv mongodb* mongodb
+#        chmod +x ./mongodb/bin/mongod${extension}
 
-  "set mongo version 3.0" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "mongo_url"
-          value: ${mongo_url_prefix}${mongo_url_platform|}3.0.5.${mongo_url_extension|tgz}
-
-  "set mongo version latest" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "mongo_url"
-          value: ${mongo_url_prefix}${mongo_url_platform|}latest.${mongo_url_extension|tgz}
-
-  "set benchmark test TestFlatEncoding" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "benchmark_test_name"
-          value: "TestFlatEncoding"
-
-  "set benchmark test TestFindOneByID" :
-    command: expansions.update
-    params:
-      updates:
-        - key: "benchmark_test_name"
-          value: "TestFindOneByID"
-
-  "create working directory" :
-    command: shell.exec
-    params:
-      script: |
-        rm -rf mongo-c-driver
-        mkdir mongo-c-driver
-
-  "fetch mongodb" :
-    command: shell.exec
-    params:
-      working_dir: "mongo-c-driver"
-      script: |
-        set -o verbose
-        set -o errexit
-        ls -la
-        echo "Fetching mongo ${mongo_url}"
-        curl -s ${mongo_url} --output mongo-archive.${ext|tgz}
-        ${decompress} mongo-archive.${ext|tgz}
-        mv mongodb* mongodb
-        chmod +x ./mongodb/bin/mongod${extension}
-
-  "fetch test data" :
-    command: shell.exec
-    params:
-      working_dir: "mongo-c-driver"
-      script: |
-        set -o verbose
-        set -o errexit
-        ls -la
-        curl https://s3.amazonaws.com/boxes.10gen.com/build/driver-test-data.tar.gz -o driver-test-data.tar.gz --silent --max-time 120
-        ${decompress} driver-test-data.tar.gz 
+#  "fetch test data" :
+#    command: shell.exec
+#    params:
+#      working_dir: "mongo-c-driver"
+#      script: |
+#        set -o verbose
+#        set -o errexit
+#        ls -la
+#        curl https://s3.amazonaws.com/boxes.10gen.com/build/driver-test-data.tar.gz -o driver-test-data.tar.gz --silent --max-time 120
+#        ${decompress} driver-test-data.tar.gz 
 
   "run benchmark tests" :
     command: shell.exec
@@ -230,16 +186,63 @@ functions:
         done=true
         exit $result
 
-  "send dashboard" :
-    command: json.send
+#  "send dashboard" :
+#    command: json.send
+#    params:
+#      name: perf
+#      file: mongo-c-driver/results.json
+
+#  "report results" :
+#    command: attach.results
+#    params:
+#      file_location: "mongo-c-driver/report.json"
+
+pre:
+  - command: shell.exec
+    params:
+      script: |
+        rm -rf mongo-c-driver
+        mkdir mongo-c-driver
+  - command: git.get_project
+    params:
+      directory: "mongo-c-driver"
+  - command: git.apply_patch
+    params:
+      directory: "mongo-c-driver"
+  - command: shell.exec
+    params:
+      working_dir: "mongo-c-driver"
+      script: |
+        set -o verbose
+        set -o errexit
+        ls -la
+        curl -s ${mongo_url} --output mongo-archive.${ext|tgz}
+        ${decompress} mongo-archive.${ext|tgz}
+        mv mongodb* mongodb
+        chmod +x ./mongodb/bin/mongod${extension}
+  - command: shell.exec
+    params:
+      working_dir: "mongo-c-driver"
+      script: |
+        set -o verbose
+        set -o errexit
+        ls -la
+        curl https://s3.amazonaws.com/boxes.10gen.com/build/driver-test-data.tar.gz -o driver-test-data.tar.gz --silent --max-time 120
+        ${decompress} driver-test-data.tar.gz
+
+post:
+  - command: shell.exec
+    params:
+      script: |
+        echo "post-task run."
+        true
+  - command: attach.results
+    params:
+      file_location: "mongo-c-driver/report.json"
+  - command: json.send
     params:
       name: perf
       file: mongo-c-driver/results.json
-
-  "report results" :
-    command: attach.results
-    params:
-      file_location: "mongo-c-driver/report.json"
 
 
 #######################################
@@ -264,15 +267,11 @@ tasks:
 
     - name: BenchMarkTests 
       commands:
-        - func: "fetch source"
-        - command: git.apply_patch
-          params:
-            directory: "mongo-c-driver"
-        - func: "fetch test data"
-        - func: "fetch mongodb"
+        #- func: "fetch source"
+        #- command: git.apply_patch
+        #  params:
+        #    directory: "mongo-c-driver"
         - func: "run benchmark tests"
-        - func: "send dashboard"
-        - func: "report results" 
 
 #######################################
 #           Buildvariants             #
