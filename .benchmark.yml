@@ -46,6 +46,7 @@ c_driver_variables:
           #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
           PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
           make
+          cd ..
     mongodb:
       start_mongod_command: &start_mongod_command
         start_mongod: |
