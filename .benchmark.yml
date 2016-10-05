@@ -1,5 +1,5 @@
 #######################################
-#       C Driver Config for MCI       #
+#       C Benchmark Tests             #
 #######################################
 
 #######################################
@@ -59,7 +59,6 @@ c_driver_variables:
     <<: *compile_unix
     <<: *start_mongod_command
     <<: *unix_path
-    #<<: *run_benchmark_tests_unix
 
 #######################################
 #            Functions                #
@@ -94,16 +93,6 @@ functions:
 
         echo "Compiling the C driver and performance binaries"
         ${compile_script}
-
-        #./autogen.sh --prefix=`pwd`/mongoc
-        #make -j8
-        #make install
-        #git clone https://github.com/mongodb/mongo-c-driver-performance.git
-        #cd mongo-c-driver-performance
-        #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
-        #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
-        #make
-        #cd ..
 
         echo "Starting mongod"
         ${start_mongod}
@@ -206,6 +195,16 @@ buildvariants:
   expansions:
     <<: *cflags_64
     <<: *mongo_v24
+    <<: *benchmark_common
+  run_on:
+     - docker
+  tasks: *benchmark_tests
+
+- name: ubuntu-1604-mongo32-test2
+  display_name: "C Driver Mongo 3.2"
+  expansions:
+    <<: *cflags_64
+    <<: *mongo_v32
     <<: *benchmark_common
   run_on:
      - docker
