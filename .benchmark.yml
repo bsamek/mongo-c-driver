@@ -118,7 +118,7 @@ functions:
           status='"fail"'
           failures=1
         fi
-        echo "{\"failures\": $failures, \"results\": [{\"status\": $status, \"exit_code\": $result, \"test_file\": \"TestFlatEncoding\", \"start\": $start_time, \"end\": $end_time, \"elapsed\": $elapsed_secs}]}" > report.json
+        echo "{\"failures\": $failures, \"results\": [{\"status\": $status, \"exit_code\": $result, \"test_file\": \"BenchMarkTests\", \"start\": $start_time, \"end\": $end_time, \"elapsed\": $elapsed_secs}]}" > report.json
         cat report.json
        
         set +o errexit
@@ -145,7 +145,7 @@ pre:
       script: |
         set -o verbose
         set -o errexit
-        ls -la
+        #ls -la
         curl -s ${mongo_url} --output mongo-archive.${ext|tgz}
         ${decompress} mongo-archive.${ext|tgz}
         mv mongodb* mongodb
@@ -156,7 +156,7 @@ pre:
       script: |
         set -o verbose
         set -o errexit
-        ls -la
+        #ls -la
         curl https://s3.amazonaws.com/boxes.10gen.com/build/driver-test-data.tar.gz -o driver-test-data.tar.gz --silent --max-time 120
         ${decompress} driver-test-data.tar.gz
 
@@ -191,22 +191,22 @@ tasks:
 
 buildvariants:
 
-#- name: ubuntu-1604-mongo24
-#  display_name: "C Driver Mongo 2.4"
-#  expansions:
-#    <<: *cflags_64
-#    <<: *mongo_v24
-#    <<: *benchmark_common
-#  run_on:
-#     - docker
-#  tasks: *benchmark_tests
-
-- name: ubuntu-1604-mongo32
-  display_name: "C Driver Mongo 3.2"
+- name: ubuntu-1604-mongo24
+  display_name: "C Driver Mongo 2.4"
   expansions:
     <<: *cflags_64
-    <<: *mongo_v32
+    <<: *mongo_v24
     <<: *benchmark_common
   run_on:
      - docker
   tasks: *benchmark_tests
+
+#- name: ubuntu-1604-mongo32
+#  display_name: "C Driver Mongo 3.2"
+#  expansions:
+#    <<: *cflags_64
+#    <<: *mongo_v32
+#    <<: *benchmark_common
+#  run_on:
+#     - docker
+#  tasks: *benchmark_tests
