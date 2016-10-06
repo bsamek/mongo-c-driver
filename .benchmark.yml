@@ -141,6 +141,7 @@ pre:
   - command: git.apply_patch
     params:
       directory: "mongo-c-driver"
+  # Fetch mongodb
   - command: shell.exec
     params:
       working_dir: "mongo-c-driver"
@@ -152,6 +153,7 @@ pre:
         ${decompress} mongo-archive.${ext|tgz}
         mv mongodb* mongodb
         chmod +x ./mongodb/bin/mongod${extension}
+  # Fetch driver test data
   - command: shell.exec
     params:
       working_dir: "mongo-c-driver"
@@ -171,6 +173,7 @@ post:
   - command: attach.results
     params:
       file_location: mongo-c-driver/report.json
+  # Send perf dashboard data
   - command: json.send
     params:
       name: perf
