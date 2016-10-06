@@ -128,11 +128,13 @@ functions:
         exit $result
 
 pre:
+  # Remove and recreate old directory
   - command: shell.exec
     params:
       script: |
         rm -rf mongo-c-driver
         mkdir mongo-c-driver
+  # git checkout mongo-c-driver
   - command: git.get_project
     params:
       directory: "mongo-c-driver"
