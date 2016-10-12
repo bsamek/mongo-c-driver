@@ -64,6 +64,7 @@ c_driver_variables:
             echo "starting mongo ${MONGO_VERSION}"
             ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork
           fi
+          echo "done"
 
   benchmark_common: &benchmark_common
     <<: *compile_unix
