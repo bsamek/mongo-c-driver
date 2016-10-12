@@ -55,7 +55,7 @@ c_driver_variables:
           set -o errexit
           set -o verbose
           mkdir db
-          echo "starting mongo ${MONGO_VERSION} with inMem setting"
+          echo "starting mongo with inMem setting"
           ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
 
   benchmark_common: &benchmark_common
