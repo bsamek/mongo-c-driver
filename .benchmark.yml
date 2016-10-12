@@ -8,7 +8,7 @@
 
 c_driver_variables:
 
-  #### Note that these are Tasks!
+  ######### Task list 
   benchmark_test_list: &benchmark_tests
     - name: "BenchMarkTests"
 
@@ -16,7 +16,8 @@ c_driver_variables:
   mongo_download_url_prefixes:
     mongo_v32: &mongo_v32
       #mongo_url: "http://downloads.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-latest.tgz"
-      mongo_url: "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.2.10.tgz"
+      #mongo_url: "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.2.10.tgz"
+      mongo_url: "https://downloads.mongodb.com/linux/mongodb-linux-x86_64-enterprise-ubuntu1604-3.2.10.tgz"
     mongo_v24: &mongo_v24
       mongo_url: "http://downloads.mongodb.org/linux/mongodb-linux-x86_64-2.4.14.tgz"
 
@@ -44,8 +45,8 @@ c_driver_variables:
           make install
           git clone https://github.com/mongodb/mongo-c-driver-performance.git
           cd mongo-c-driver-performance
-          #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
-          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
+          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
+          #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
           make
           cd ..
     mongodb:
@@ -54,7 +55,15 @@ c_driver_variables:
           set -o errexit
           set -o verbose
           mkdir db
-          ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork --logappend --smallfiles --oplogSize 50 
+          MONGO_VERSION=`./mongodb/bin/mongod --version | grep 'db version' | awk '{print $3}'`
+          MONGO_MAJOR_VERSION=${MONGO_VERSION:1:1}
+          if [[ (( "$MONGO_MAJOR_VERSION" > 2 )) ]]; then
+            echo "starting mongo ${MONGO_VERSION} with inMem setting"
+            ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
+          else
+            echo "starting mongo ${MONGO_VERSION}"
+            ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork
+          fi
 
   benchmark_common: &benchmark_common
     <<: *compile_unix
@@ -93,16 +102,15 @@ functions:
         trap finish EXIT
 
         echo "Compiling the C driver and performance binaries"
-        ${compile_script}
 
         echo "Starting mongod"
         ${start_mongod}
         sleep 15
 
-        echo "Running Benchmark tests (just two for now)"
+        echo "Running Benchmark tests "
         start_time=$(date +%s)
-        # LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data TestFlatEncoding TestDeepEncoding
-        LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
+        #LD_LIBRARY_PATH=`pwd`/.libs:`pwd`/mongoc/lib:$LD_LIBRARY_PATH ./mongo-c-driver-performance/mongo-c-performance ./data
+        echo "TEST PLACEHOLDER"
         set +o errexit
         result=$?
 
@@ -173,12 +181,6 @@ post:
   - command: attach.results
     params:
       file_location: mongo-c-driver/report.json
-  # Send perf dashboard data
-  - command: json.send
-    params:
-      name: perf
-      file: mongo-c-driver/results.json
-
 
 #######################################
 #               Tasks                 #
@@ -196,22 +198,22 @@ tasks:
 
 buildvariants:
 
-- name: ubuntu-1604-mongo24
-  display_name: "C Driver Mongo 2.4"
-  expansions:
-    <<: *cflags_64
-    <<: *mongo_v24
-    <<: *benchmark_common
-  run_on:
-     - docker
-  tasks: *benchmark_tests
-
-#- name: ubuntu-1604-mongo32
-#  display_name: "C Driver Mongo 3.2"
+#- name: ubuntu-1604-mongo24
+#  display_name: "C Driver Mongo 2.4"
 #  expansions:
 #    <<: *cflags_64
-#    <<: *mongo_v32
+#    <<: *mongo_v24
 #    <<: *benchmark_common
 #  run_on:
-#     - docker
+#     - ubuntu1604-build
 #  tasks: *benchmark_tests
+
+- name: ubuntu-1604-mongo32
+  display_name: "C Driver Mongo 3.2"
+  expansions:
+    <<: *cflags_64
+    <<: *mongo_v32
+    <<: *benchmark_common
+  run_on:
+     - docker 
+  tasks: *benchmark_tests
