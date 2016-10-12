@@ -57,13 +57,13 @@ c_driver_variables:
           mkdir db
           MONGO_VERSION=`./mongodb/bin/mongod --version | grep 'db version' | awk '{print $3}'`
           MONGO_MAJOR_VERSION=${MONGO_VERSION:1:1}
-          if [[ (( "$MONGO_MAJOR_VERSION" > 2 )) ]]; then
-            echo "starting mongo ${MONGO_VERSION} with inMem setting"
-            ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
-          else
-            echo "starting mongo ${MONGO_VERSION}"
-            ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork
-          fi
+          #if [[ (( "$MONGO_MAJOR_VERSION" > 2 )) ]]; then
+          echo "starting mongo ${MONGO_VERSION} with inMem setting"
+          ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
+          #else
+          #  echo "starting mongo ${MONGO_VERSION}"
+          #  ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork
+          #fi
           echo "done"
 
   benchmark_common: &benchmark_common
