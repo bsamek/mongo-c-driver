@@ -55,8 +55,10 @@ c_driver_variables:
           set -o errexit
           set -o verbose
           mkdir db
+          mongo_version=$(./mongodb/bin/mongod --version | grep 'db version' | awk '{print $3}' | cut -d . -f 1)
+          echo "Mongo version: $mongo_version"
           echo "starting mongo with inMem setting"
-          ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
+          #./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
 
   benchmark_common: &benchmark_common
     <<: *compile_unix
