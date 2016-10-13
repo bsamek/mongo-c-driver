@@ -57,6 +57,7 @@ c_driver_variables:
           mkdir db
           mongo_version=$(./mongodb/bin/mongod --version | grep 'db version' | awk '{print $3}' | cut -d . -f 1)
           echo "Mongo version: $mongo_version"
+          echo $mongo_version
           echo "starting mongo with inMem setting"
           #./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork
 
@@ -207,7 +208,8 @@ buildvariants:
   display_name: "C Driver Mongo 3.2"
   expansions:
     <<: *cflags_64
-    <<: *mongo_v32
+    #<<: *mongo_v32
+    <<: *mongo_v24
     <<: *benchmark_common
   run_on:
      - docker 
