@@ -206,7 +206,7 @@ buildvariants:
     <<: *mongo_v24
     <<: *benchmark_common
   run_on:
-     - ubuntu1604-build
+     - docker 
   tasks: *benchmark_tests
 
 #- name: ubuntu-1604-mongo32
