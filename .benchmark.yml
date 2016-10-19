@@ -45,8 +45,8 @@ c_driver_variables:
           make install
           git clone https://github.com/mongodb/mongo-c-driver-performance.git
           cd mongo-c-driver-performance
-          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
-          #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
+          #PKG_CONFIG_PATH=../mongoc/lib/pkgconfig /opt/cmake/bin/cmake .
+          PKG_CONFIG_PATH=../mongoc/lib/pkgconfig cmake .
           make
           cd ..
     mongodb:
@@ -55,16 +55,16 @@ c_driver_variables:
           set -o errexit
           set -o verbose
           mkdir db
-          mongo_major_version=$(./mongodb/bin/mongod --version | grep 'db version' | awk '{print $3}' | cut -d . -f 1)
-          echo "$mongo_major_version"
+          #mongo_major_version=$(./mongodb/bin/mongod --version | grep 'db version' | awk '{print $3}' | cut -d . -f 1)
+          #echo "$mongo_major_version"
 
-          if [ "$mongo_major_version" = "v2" ]; then
-              echo "MONGO is V2"
-              echo "./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork"
-          else
-              echo "MONGO is NOT V2: it is $mongo_major_version"
-              echo "./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork"
-          fi;
+          #if [ "$mongo_major_version" = "v2" ]; then
+          #    echo "MONGO is V2"
+          ./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --fork
+          #else
+          #    echo "MONGO is NOT V2: it is $mongo_major_version"
+          #    echo "./mongodb/bin/mongod --dbpath `pwd`/db --logpath `pwd`/db/db.log --storageEngine inMemory --fork"
+          #fi;
 
   benchmark_common: &benchmark_common
     <<: *compile_unix
@@ -199,23 +199,23 @@ tasks:
 
 buildvariants:
 
-#- name: ubuntu-1604-mongo24
-#  display_name: "C Driver Mongo 2.4"
-#  expansions:
-#    <<: *cflags_64
-#    <<: *mongo_v24
-#    <<: *benchmark_common
-#  run_on:
-#     - ubuntu1604-build
-#  tasks: *benchmark_tests
-
-- name: ubuntu-1604-mongo32
-  display_name: "C Driver Mongo 3.2"
+- name: ubuntu-1604-mongo24
+  display_name: "C Driver Mongo 2.4"
   expansions:
     <<: *cflags_64
-    #<<: *mongo_v32
     <<: *mongo_v24
     <<: *benchmark_common
   run_on:
-     - docker 
+     - ubuntu1604-build
   tasks: *benchmark_tests
+
+#- name: ubuntu-1604-mongo32
+#  display_name: "C Driver Mongo 3.2"
+#  expansions:
+#    <<: *cflags_64
+    #<<: *mongo_v32
+#    <<: *mongo_v24
+#    <<: *benchmark_common
+#  run_on:
+#     - docker 
+#  tasks: *benchmark_tests
